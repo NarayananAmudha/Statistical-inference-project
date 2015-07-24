@@ -1,0 +1,120 @@
+---
+title: "Exponential Distribution Simulation"
+author: "Amudha"
+output: word_document
+---
+```{r global_options, include=FALSE}
+# load neccesary libraries
+library(ggplot2)
+library(knitr)
+opts_chunk$set(fig.width=7, fig.height=3.5, warning=FALSE, message=FALSE)
+```
+
+
+## Overview
+This report is part of Coursera **Statistical Inference ** project to investigate the exponential distribution in R and compare it with the Central Limit Theorem through simulation .Scope of this investigation report is to
+
+1. Show the sample mean and compare it to the theoretical mean of the distribution.
+2. Show the sample variance and compare it to theoretical variance of the distribution.
+3. Show that the distribution is approximately normal.
+
+## Simulations
+The exponential distribution is simulated in R with `rexp(n, lambda)` where
+`lambda` $\lambda$ is the rate parameter. The mean of exponential distribution is 
+$1/\lambda$ and the standard deviation is also $1/\lambda$. For this simulation,
+we set $\lambda=0.2$. In this simulation, we investigate the distribution of
+averages of 40 numbers sampled from 1000 exponential distribution with $\lambda=0.2$.
+
+
+```{r}
+lambda <- 0.2 # lambda for rexp
+n <- 40 # number of exponetials
+num_sim <- 1000 # number of simulation
+set.seed(3) # to reproduce same simulation
+
+exp_dist <- matrix(data=rexp(n * num_sim, lambda), nrow=num_sim)
+exp_dist_mean <- data.frame(means=apply(exp_dist, 1, mean))
+```
+
+```{r echo=FALSE}
+# plot the means
+ggplot(data = exp_dist_mean, aes(x = means)) + 
+  geom_histogram(binwidth = lambda,fill="turquoise2",color="black") +   
+  scale_x_continuous(breaks=round(seq(min(exp_dist_mean$means), max(exp_dist_mean$means), by=1))) +
+  labs(title="Overview of Simulated Sample Data with Mean")
+```
+
+## Sample Mean versus Theoretical Mean
+
+The expected mean $\mu$ of a exponential distribution of rate $\lambda$ is $\mu= \frac{1}{\lambda}$ 
+
+```{r}
+theory_mean <- 1/lambda
+theory_mean
+```
+
+The average sample mean of 1000 simulations of 40 randomly sampled exponential distributions.
+
+```{r}
+sample_mean <- mean(exp_dist_mean$means) #Take mean Of Means
+sample_mean
+```
+```{r echo=FALSE}
+par(mfrow=c(1,2))
+hist(exp_dist_mean$means,probability=T,main=paste('Theoretical Mean is ',format(round(theory_mean,2),nsmall=2)),ylim=c(0,0.55),col='gray',xlab='means ')
+abline(v=theory_mean,col='red',lwd=5)
+hist(exp_dist_mean$means,probability=T,main=paste('Actual Mean is ',format(round(sample_mean,2),nsmall=2)),ylim=c(0,0.55),col='gray',xlab='means ')
+abline(v=sample_mean,col='blue',lwd=5)
+```
+
+The above Histograms shows that value of sample mean **`r sample_mean`** is very close to theoretical mean value **`r theory_mean`**
+
+
+## Sample Variance versus Theoretical Variance
+
+The theoritical variance $Var$ of standard deviation $\sigma$ is
+
+$Var = \sigma^2$  where $\sigma = \frac{1/\lambda}{\sqrt{n}}$ 
+
+```{r}
+std_dev <- 1/lambda/sqrt(n)
+theory_Var <- std_dev^2
+theory_Var
+```
+
+The variance of the average sample mean of 1000 simulations of 40 randomly sampled exponential distribution is 
+```{r}
+
+sample_Var <- var(exp_dist_mean$means)
+sample_Var
+```
+
+The value of sample variance **`r sample_Var`** is almost equal to the theoretical variance **`r theory_Var`** .Therefore, the variability in distribution of averages of 40 exponentials is close to the theoretical variance of the distribution.
+
+## Distribution
+
+Finally Compare the sample distribution with a normal distribution of the theoritical values by plotting
+
+* the distibution for sample values in Blue and theoritical values in Red .
+* the sampled mean in dotted blue line and theoritical mean in red line.
+
+```{r echo=FALSE}
+# plot the means
+ggplot(data = exp_dist_mean, aes(x = means)) + 
+   geom_histogram(binwidth = lambda,fill="orange1",color="black",  aes(y=..density..)) + 
+  stat_function(fun = dnorm, arg = list(mean = theory_mean , sd = std_dev), colour = "red", size=1) + 
+  geom_vline(xintercept = theory_mean, size=1, colour="#CC0000") + 
+  geom_density(colour="blue", size=1) +
+  geom_vline(xintercept = sample_mean, size=1, colour="#0000CC",linetype = "longdash") + 
+  scale_x_continuous(breaks=seq(theory_mean-3,theory_mean+3,1), limits=c(theory_mean-3,theory_mean+3))+
+  labs(title="Distribution of Sampled Mean with lambda=0.2")
+
+```
+
+It is clear from the graph, that sample distribution is approximately normal as the distribution of means of random sampled exponantial distributions overlaps closely with the normal distribution for  $\lambda=0.2$
+
+## Conclusion
+For  $\lambda=0.2$ ,the sample distribution is approximately normal with Mean and Variance value match closely with theoritical mean $\mu= \frac{1}{\lambda}$  and variance $Var = \sigma^2$
+
+## Appendix
+For complete report source code refer to [GitHub](https://github.com/NarayananAmudha/Statistical-inference-project) 
